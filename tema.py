@@ -96,13 +96,14 @@ class Worker(Thread):
                 r.zrem('heartbeats', worker[0])
             	
             	if r.zcard('heartbeats') < self.N:
-					print('Adding worker no %d' % (self.id))
+            		print('Adding worker no %d' % (self.id))
 
-					r.zadd('heartbeats', {self.id: time.time()})
-				else:
-					print('There are enough workers, so I will wait')
+            		r.zadd('heartbeats', {self.id: time.time()})
 
-					exit()
+            	else:
+            		print('There are enough workers, so I will wait')
+
+            		exit()
 
 	def run(self):
 		print('Worker thread no %d started working...' % (self.id))
