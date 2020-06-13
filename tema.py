@@ -47,62 +47,62 @@ class Worker(Thread):
 
 		print('Thread updated fib with %d'  % (nextFib))
 
-        r.set('fib', nextFib)
+		r.set('fib', nextFib)
 
-    	r.delete('lock.foo')
+		r.delete('lock.foo')
 
-        return True
+		return True
 
 	def updateHeartbeat(self):
 		currT= int(time.time())
-           
-        currTime = int(time.time())
+
+		currTime = int(time.time())
 
 		if currTime - currT > self.T:
-            r.zadd(zname, {worker_id: time.time()})
+			r.zadd(zname, {worker_id: time.time()})
 
 	def doSomeWork(self):
 		currW= int(time.time())
-            
-        currTime = int(time.time())
+
+		currTime = int(time.time())
 
 		if currTime - currW > self.W:
-            work = self.doWork()
+			work = self.doWork()
 
 	def checkCrash(self):
 		currC= int(time.time())
 
-	    random.seed()
-            
-        currTime = int(time.time())
+		random.seed()
+
+		currTime = int(time.time())
 
 		if currTime - currC > self.C:
-           	chance = random.randint(1, 10)
+			chance = random.randint(1, 10)
 
-	        if (chance == 1):
+			if (chance == 1):
 				print('Sadly, this worker crashed')
 
-               	exit()
+				exit()
 	
 	def startup(self):
-        workers = r.zrange('heartbeats', 0, -1, withscores=True)
+		workers = r.zrange('heartbeats', 0, -1, withscores=True)
 
-    	for worker in workers:
-            score = worker[1]
+		for worker in workers:
+			score = worker[1]
 
-    	    if score < time.time() - self.T:
+			if score < time.time() - self.T:
                 print('Delete worker no %d' % (self.id))
 
-            	r.zrem('heartbeats', worker[0])
-    
-        if r.zcard('heartbeats') < self.N:
-            print('Adding worker no %d' % (self.id))
+                r.zrem('heartbeats', worker[0])
+            	
+            	if r.zcard('heartbeats') < self.N:
+					print('Adding worker no %d' % (self.id))
 
-    		r.zadd('heartbeats', {self.id: time.time()})
-    	else:
-            print('There are enough workers, so I will wait')
+					r.zadd('heartbeats', {self.id: time.time()})
+				else:
+					print('There are enough workers, so I will wait')
 
-    		exit()
+					exit()
 
 	def run(self):
 		print('Worker thread no %d started working...' % (self.id))
