@@ -6,7 +6,7 @@ import time
 import random
 import math
 
-r = redis.Redis(host='localhost', port=6379, db=0, password='foobared')
+r = redis.Redis(host='localhost', port=6379, db=0, password='')
 
 class Manager(Thread):
 	def __init__(self, M):
@@ -16,6 +16,7 @@ class Manager(Thread):
 
 	def run(self):
 		print('Manager thread started working...')
+
 		while(True):
 			worker = Worker(10, 20, 10, 10, self.id_worker)
 
@@ -35,7 +36,7 @@ class Worker(Thread):
 		self.id = id
 
 	def doWork(self):
-		lock = r.setnx("lock.foo", 1)
+		lock = r.setnx('lock.foo', 1)
 
 		if not lock:
 			return False
@@ -48,7 +49,7 @@ class Worker(Thread):
 
         r.set('fib', nextFib)
 
-    	r.delete("lock.foo")
+    	r.delete('lock.foo')
 
         return True
 
@@ -60,8 +61,6 @@ class Worker(Thread):
 		if currTime - currT > self.T:
             r.zadd(zname, {worker_id: time.time()})
 
-	        currT = currTime
-
 	def doSomeWork(self):
 		currW= int(time.time())
             
@@ -69,9 +68,6 @@ class Worker(Thread):
 
 		if currTime - currW > self.W:
             work = self.doWork()
-
-            if work is True:
-                currW = currTime
 
 	def checkCrash(self):
 		currC= int(time.time())
@@ -85,9 +81,8 @@ class Worker(Thread):
 
 	        if (chance == 1):
 				print('Sadly, this worker crashed')
+
                	exit()
-           	else:
-	           	currC = currTime
 	
 	def startup(self):
         workers = r.zrange('heartbeats', 0, -1, withscores=True)
@@ -114,12 +109,11 @@ class Worker(Thread):
 
 		self.startup()
 
-		while(True):
-			self.updateHeartbeat()
+		self.updateHeartbeat()
 
-       		self.doSomeWork()
+		self.doSomeWork()
 
-   			self.checkCrash()
+		self.checkCrash()
 
 
 if __name__ == '__main__':
