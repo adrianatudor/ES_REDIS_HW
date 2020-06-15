@@ -13,6 +13,7 @@ class Manager(Thread):
 		Thread.__init__(self)
 		self.M = M
 		self.id_worker = 0
+		self.workers = []
 
 	def run(self):
 		print('Manager thread started working...')
@@ -20,11 +21,16 @@ class Manager(Thread):
 		while(True):
 			worker = Worker(10, 20, 10, 10, self.id_worker)
 
+			self.workers.append(worker)
+
 			self.id_worker += 1
 
-			worker.run()
+			worker.start()
 
-			time.sleep(self.M)		
+			time.sleep(self.M)
+
+		for worker in workers:
+			worker.join()	
 
 class Worker(Thread):
 	def __init__(self, T, W, C, N, id):
@@ -99,7 +105,6 @@ class Worker(Thread):
             		print('Adding worker no %d' % (self.id))
 
             		r.zadd('heartbeats', {self.id: time.time()})
-
             	else:
             		print('There are enough workers, so I will wait')
 
@@ -120,4 +125,6 @@ class Worker(Thread):
 if __name__ == '__main__':
 	manager = Manager(30)
 
-	manager.run()
+	manager.start()
+
+	manager.join()
